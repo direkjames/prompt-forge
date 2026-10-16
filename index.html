@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Prompt Forge — App Builder Prompt Generator</title>
+<meta name="description" content="Turn any app idea into a structured, agent-ready build prompt. Runs entirely in your browser.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0b0d12;
+  --panel:#12151d;
+  --panel-2:#171b25;
+  --field:#0d1017;
+  --line:#242935;
+  --text:#e8ebf2;
+  --muted:#8a92a6;
+  --accent:#7c5cff;
+  --accent-2:#22d3ee;
+  --radius:18px;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+  min-height:100vh;
+  background:
+    radial-gradient(1100px 620px at 8% -12%, rgba(124,92,255,.20), transparent 60%),
+    radial-gradient(900px 520px at 108% 0%, rgba(34,211,238,.13), transparent 60%),
+    var(--bg);
+  color:var(--text);
+  font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  -webkit-font-smoothing:antialiased;
+}
+header{
+  max-width:1280px;margin:0 auto;padding:28px 24px 8px;
+  display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;
+}
+.brand{display:flex;align-items:center;gap:12px}
+.brand b{display:block;font-size:16px;letter-spacing:-.01em}
+.logo{
+  width:38px;height:38px;border-radius:12px;flex:none;
+  background:linear-gradient(135deg,var(--accent),var(--accent-2));
+  box-shadow:0 10px 28px rgba(124,92,255,.38);
+}
+.tag{font-size:12px;color:var(--muted);border:1px solid var(--line);padding:7px 12px;border-radius:999px;background:rgba(18,21,29,.6)}
+main{
+  max-width:1280px;margin:0 auto;padding:18px 24px 40px;
+  display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.05fr);gap:28px;align-items:start;
+}
+@media (max-width:980px){main{grid-template-columns:1fr}}
+h1{
+  font-size:clamp(30px,4.2vw,46px);line-height:1.08;letter-spacing:-.035em;margin:10px 0 12px;font-weight:700;
+  background:linear-gradient(180deg,#ffffff,#a9b2c7);-webkit-background-clip:text;background-clip:text;color:transparent;
+}
+.lede{color:var(--muted);margin:0 0 24px;max-width:600px;line-height:1.65;font-size:15px}
+.sections{display:flex;flex-direction:column;gap:18px;min-width:0}
+.card{
+  background:linear-gradient(180deg,var(--panel-2),var(--panel));
+  border:1px solid var(--line);border-radius:var(--radius);padding:22px;
+  box-shadow:0 24px 60px rgba(0,0,0,.35);min-width:0;
+}
+.card h2{
+  font-size:12px;text-transform:uppercase;letter-spacing:.14em;color:var(--muted);
+  margin:0 0 18px;font-weight:600;
+}
+.field{display:flex;flex-direction:column;gap:8px;margin-bottom:16px}
+.field:last-child{margin-bottom:0}
+label.lbl{font-size:14px;font-weight:500}
+.hint{font-size:12px;color:var(--muted);line-height:1.5}
+input[type=text],textarea,select{
+  width:100%;background:var(--field);border:1px solid var(--line);color:var(--text);
+  border-radius:12px;padding:12px 14px;font:inherit;font-size:14px;
+  transition:border-color .2s,box-shadow .2s;
+}
+input[type=text],select{height:46px}
+select{appearance:none;background-image:linear-gradient(45deg,transparent 50%,var(--muted) 50%),linear-gradient(135deg,var(--muted) 50%,transparent 50%);background-position:calc(100% - 20px) 20px,calc(100% - 14px) 20px;background-size:6px 6px;background-repeat:no-repeat;padding-right:36px}
+textarea{min-height:86px;resize:vertical;line-height:1.55}
+input[type=text]::placeholder,textarea::placeholder{color:#525a6e}
+input[type=text]:focus,textarea:focus,select:focus{
+  outline:none;border-color:var(--accent);box-shadow:0 0 0 4px rgba(124,92,255,.18);
+}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media (max-width:600px){.row{grid-template-columns:1fr}}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{position:relative;display:inline-flex}
+.chip input{position:absolute;opacity:0;width:1px;height:1px;pointer-events:none}
+.chip span{
+  display:inline-flex;align-items:center;padding:8px 14px;border-radius:999px;
+  border:1px solid var(--line);background:var(--field);color:var(--muted);
+  font-size:13px;cursor:pointer;user-select:none;transition:all .15s ease;
+}
+.chip span:hover{color:var(--text);border-color:#3a4150}
+.chip input:checked + span{
+  color:#fff;border-color:transparent;
+  background:linear-gradient(135deg,rgba(124,92,255,.95),rgba(34,211,238,.75));
+  box-shadow:0 8px 20px rgba(124,92,255,.25);
+}
+.chip input:focus-visible + span{box-shadow:0 0 0 4px rgba(124,92,255,.28)}
+.toggle{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:14px 0;border-bottom:1px solid var(--line)}
+.toggle:first-of-type{padding-top:0}
+.toggle:last-child{border-bottom:0;padding-bottom:0}
+.toggle label.lbl{display:block}
+.toggle .hint{margin-top:3px}
+.switch{position:relative;width:46px;height:26px;flex:none;cursor:pointer}
+.switch input{position:absolute;opacity:0;width:0;height:0}
+.switch i{position:absolute;inset:0;background:#262c3a;border-radius:999px;transition:background .2s}
+.switch i::before{
+  content:"";position:absolute;width:20px;height:20px;left:3px;top:3px;
+  background:#fff;border-radius:50%;transition:transform .2s ease;box-shadow:0 2px 6px rgba(0,0,0,.3);
+}
+.switch input:checked + i{background:linear-gradient(135deg,var(--accent),var(--accent-2))}
+.switch input:checked + i::before{transform:translateX(20px)}
+.switch input:focus-visible + i{box-shadow:0 0 0 4px rgba(124,92,255,.28)}
+.preview{position:sticky;top:24px;display:flex;flex-direction:column;gap:16px;height:calc(100vh - 48px);min-height:560px}
+@media (max-width:980px){.preview{position:static;height:auto;min-height:0}}
+.preview-head{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;flex-wrap:wrap}
+.preview-head h2{margin:0 0 4px}
+.counter{font-size:12px;color:var(--muted)}
+pre{
+  flex:1;margin:0;overflow:auto;background:#090b10;border:1px solid var(--line);border-radius:14px;
+  padding:20px;font:13px/1.65 "JetBrains Mono",ui-monospace,Menlo,Consolas,monospace;color:#cdd5e6;
+  white-space:pre-wrap;word-break:break-word;min-height:320px;
+}
+.btns{display:flex;gap:10px;flex-wrap:wrap}
+button{
+  font:inherit;font-size:14px;font-weight:600;border:1px solid var(--line);background:#161a24;color:var(--text);
+  border-radius:12px;padding:11px 16px;cursor:pointer;transition:transform .1s,filter .2s,background .2s;
+}
+button:hover{filter:brightness(1.15)}
+button:active{transform:scale(.98)}
+button:focus-visible{outline:none;box-shadow:0 0 0 4px rgba(124,92,255,.3)}
+button.primary{
+  background:linear-gradient(135deg,var(--accent),#5b8cff);border-color:transparent;color:#fff;
+  box-shadow:0 10px 30px rgba(124,92,255,.35);
+}
+button.ghost{background:transparent}
+.toast{
+  position:fixed;left:50%;bottom:28px;transform:translate(-50%,20px);opacity:0;pointer-events:none;
+  background:#1b2030;border:1px solid var(--line);padding:12px 18px;border-radius:12px;font-size:14px;
+  transition:opacity .25s,transform .25s;box-shadow:0 20px 40px rgba(0,0,0,.45);z-index:10;
+}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+.toast.ok{border-color:rgba(52,211,153,.5)}
+.toast.err{border-color:rgba(248,113,113,.5)}
+footer{max-width:1280px;margin:0 auto;padding:0 24px 40px;color:var(--muted);font-size:12px}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand">
+    <div class="logo" aria-hidden="true"></div>
+    <div><b>Prompt Forge</b><span class="hint">App builder prompt generator</span></div>
+  </div>
+  <span class="tag">Runs fully in your browser · nothing is sent anywhere</span>
+</header>
+
+<main>
+  <section>
+    <h1>Turn any app idea into a build-ready prompt.</h1>
+    <p class="lede">Fill in what you know and skip what you don't. The brief updates live on the right, ready to paste into any AI coding agent.</p>
+
+    <form id="form" class="sections" autocomplete="off">
+
+      <div class="card">
+        <h2>01 · The idea</h2>
+        <div class="field">
+          <label class="lbl" for="name">App name</label>
+          <input type="text" id="name" placeholder="e.g. Inkfold" maxlength="80">
+        </div>
+        <div class="field">
+          <label class="lbl" for="idea">What does it do?</label>
+          <textarea id="idea" placeholder="Describe the idea in a few sentences. What problem does it solve and how should it feel?"></textarea>
+        </div>
+        <div class="field">
+          <label class="lbl" for="users">Who is it for?</label>
+          <input type="text" id="users" placeholder="e.g. Dungeon masters running weekly campaigns" maxlength="160">
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>02 · Platform</h2>
+        <div class="chips" role="radiogroup" aria-label="Platform">
+          <label class="chip"><input type="radio" name="platform" value="Website"><span>Website</span></label>
+          <label class="chip"><input type="radio" name="platform" value="Browser extension"><span>Browser extension</span></label>
+          <label class="chip"><input type="radio" name="platform" value="Android app"><span>Android app</span></label>
+          <label class="chip"><input type="radio" name="platform" value="Windows app"><span>Windows app</span></label>
+          <label class="chip"><input type="radio" name="platform" value="Minecraft plugin"><span>Minecraft plugin</span></label>
+          <label class="chip"><input type="radio" name="platform" value="Minecraft mod"><span>Minecraft mod</span></label>
+          <label class="chip"><input type="radio" name="platform" value="Other"><span>Other</span></label>
+        </div>
+        <div class="field" style="margin-top:18px">
+          <label class="lbl" for="stack">Preferred stack <span class="hint">(optional)</span></label>
+          <input type="text" id="stack" placeholder="e.g. Kotlin + Jetpack Compose + Room" maxlength="120">
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>03 · Features</h2>
+        <div class="field">
+          <label class="lbl" for="must">Must-have features</label>
+          <textarea id="must" placeholder="One per line&#10;Sign in with email&#10;Export to PDF"></textarea>
+          <span class="hint">The core of the app. These must work before anything else.</span>
+        </div>
+        <div class="field">
+          <label class="lbl" for="nice">Nice-to-have features</label>
+          <textarea id="nice" placeholder="Built only after the must-haves work"></textarea>
+        </div>
+        <div class="field">
+          <label class="lbl" for="nonGoals">Out of scope</label>
+          <textarea id="nonGoals" placeholder="Things the agent should explicitly not build"></textarea>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>04 · Data & accounts</h2>
+        <div class="field">
+          <label class="lbl" for="storage">Where does data live?</label>
+          <select id="storage">
+            <option value="">Let the agent decide</option>
+            <option>Browser only (no backend)</option>
+            <option>On-device storage</option>
+            <option>Own backend or API</option>
+            <option>Supabase or Firebase</option>
+            <option>Minecraft config and data files</option>
+          </select>
+        </div>
+        <div class="field">
+          <span class="lbl">What does it need?</span>
+          <div class="chips">
+            <label class="chip"><input type="checkbox" name="traits" value="User accounts and login"><span>Accounts & login</span></label>
+            <label class="chip"><input type="checkbox" name="traits" value="Cloud sync"><span>Cloud sync</span></label>
+            <label class="chip"><input type="checkbox" name="traits" value="Offline support"><span>Offline</span></label>
+            <label class="chip"><input type="checkbox" name="traits" value="Payments"><span>Payments</span></label>
+            <label class="chip"><input type="checkbox" name="traits" value="Notifications"><span>Notifications</span></label>
+            <label class="chip"><input type="checkbox" name="traits" value="Realtime updates"><span>Realtime</span></label>
+            <label class="chip"><input type="checkbox" name="traits" value="Analytics"><span>Analytics</span></label>
+            <label class="chip"><input type="checkbox" name="traits" value="Admin panel"><span>Admin panel</span></label>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>05 · Design</h2>
+        <div class="row">
+          <div class="field">
+            <label class="lbl" for="design">Visual direction</label>
+            <select id="design">
+              <option value="Premium, modern, and minimal with a dark theme">Premium & minimal (dark)</option>
+              <option value="Premium, modern, and minimal with a light theme">Premium & minimal (light)</option>
+              <option value="Bold, playful, and colorful while staying polished">Bold & playful</option>
+              <option value="Clean, corporate, and trustworthy">Corporate & clean</option>
+              <option value="Retro or game-inspired with strong character">Retro / game-inspired</option>
+              <option value="Choose the best direction for the audience">Let the agent decide</option>
+            </select>
+          </div>
+          <div class="field">
+            <label class="lbl" for="brand">Brand notes <span class="hint">(optional)</span></label>
+            <input type="text" id="brand" placeholder="e.g. Teal accent, rounded corners" maxlength="120">
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>06 · Agent & standards</h2>
+        <div class="field">
+          <label class="lbl" for="agent">Target agent</label>
+          <select id="agent">
+            <option value="">Any agent</option>
+            <option>Claude Code</option>
+            <option>Cursor</option>
+            <option>GitHub Copilot</option>
+            <option>OpenAI Codex</option>
+            <option>Other</option>
+          </select>
+        </div>
+
+        <div class="toggle">
+          <div>
+            <label class="lbl" for="t-premium">Premium feel</label>
+            <span class="hint">Build it like a paid product, not a prototype.</span>
+          </div>
+          <label class="switch"><input type="checkbox" id="t-premium" data-toggle="premium" checked><i></i></label>
+        </div>
+        <div class="toggle">
+          <div>
+            <label class="lbl" for="t-quality">Bug, exploit & crash sweep</label>
+            <span class="hint">Check for bugs, exploits, glitches, dupes, and crashes, then fix them.</span>
+          </div>
+          <label class="switch"><input type="checkbox" id="t-quality" data-toggle="quality" checked><i></i></label>
+        </div>
+        <div class="toggle">
+          <div>
+            <label class="lbl" for="t-tests">Test checklist</label>
+            <span class="hint">End with numbered steps to verify the build.</span>
+          </div>
+          <label class="switch"><input type="checkbox" id="t-tests" data-toggle="tests" checked><i></i></label>
+        </div>
+        <div class="toggle">
+          <div>
+            <label class="lbl" for="t-commit">Commit & push summary</label>
+            <span class="hint">Every commit gets a short description of what was done.</span>
+          </div>
+          <label class="switch"><input type="checkbox" id="t-commit" data-toggle="commit" checked><i></i></label>
+        </div>
+        <div class="toggle">
+          <div>
+            <label class="lbl" for="t-dkcore">Build plugins on dkCore</label>
+            <span class="hint">Applies to Minecraft plugins only.</span>
+          </div>
+          <label class="switch"><input type="checkbox" id="t-dkcore" data-toggle="dkcore" checked><i></i></label>
+        </div>
+        <div class="toggle">
+          <div>
+            <label class="lbl" for="t-author">Author credit</label>
+            <span class="hint">Set the author on plugins and mods.</span>
+          </div>
+          <label class="switch"><input type="checkbox" id="t-author" data-toggle="author" checked><i></i></label>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>07 · Your defaults</h2>
+        <div class="row">
+          <div class="field">
+            <label class="lbl" for="author">Author name</label>
+            <input type="text" id="author" value="direk james" maxlength="60">
+          </div>
+          <div class="field">
+            <label class="lbl" for="repo">dkCore repository</label>
+            <input type="text" id="repo" value="https://github.com/direkjames/dkCore" maxlength="160">
+          </div>
+        </div>
+      </div>
+
+    </form>
+  </section>
+
+  <aside class="card preview" aria-label="Generated prompt">
+    <div class="preview-head">
+      <div>
+        <h2>Generated prompt</h2>
+        <div class="counter" id="count">—</div>
+      </div>
+      <div class="btns">
+        <button type="button" class="ghost" id="reset">Reset</button>
+        <button type="button" id="dl">Download .md</button>
+        <button type="button" class="primary" id="copy">Copy prompt</button>
+      </div>
+    </div>
+    <pre id="out" tabindex="0"></pre>
+  </aside>
+</main>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<footer>Single static file · Works on GitHub Pages · Your data stays in this browser.</footer>
+
+<script>
+(() => {
+  "use strict";
+
+  const $ = (id) => document.getElementById(id);
+  const form = $("form");
+  const out = $("out");
+  const KEY = "promptforge.v1";
+
+  const PLATFORM_NOTES = {
+    "Website": "Prefer semantic HTML, responsive CSS, and accessible components. If it is a static site, make sure it deploys to GitHub Pages.",
+    "Browser extension": "Use Manifest V3 and request only the permissions it truly needs. Keep the popup and background logic separate and robust.",
+    "Android app": "Use Kotlin with Jetpack Compose and Material 3. Store local data with Room. Support recent Android versions and handle rotation, back navigation, and offline states.",
+    "Windows app": "Use a modern Windows stack (WinUI 3 with C#, or another well-maintained framework) and follow Fluent design principles. Handle window resizing, keyboard navigation, and dark mode.",
+    "Minecraft plugin": "Use Java for the latest supported Paper API, with Maven or Gradle. Keep all Bukkit API calls on the main thread and run file or database I/O asynchronously. Provide plugin.yml, a documented config.yml, and permissions for every command.",
+    "Minecraft mod": "Use Java with the mod loader the owner names (Fabric, Forge, or NeoForge). If none is named, choose the most suitable one and state it. Keep client and server code separated and provide mod metadata and a documented config."
+  };
+
+  const AGENT_NOTES = {
+    "Claude Code": "Work inside the repository. Run the build and tests after each milestone, and show the commands you ran with their results.",
+    "Cursor": "Plan the steps first, then implement in small, reviewable changes and briefly explain each one.",
+    "GitHub Copilot": "Keep changes focused on the files that are needed and match the existing code style exactly.",
+    "OpenAI Codex": "Run the build and tests in the sandbox before finishing, and report the results clearly.",
+    "Other": "Work in small, verifiable steps and report the results of each build and test run."
+  };
+
+  const MC_QUALITY_PLUGIN = [
+    "Item, currency, or XP duplication through disconnects, inventory moves, or command spam",
+    "Bukkit or Paper API calls made from async threads",
+    "Listeners, tasks, and cached data not cleaned up on disable or reload"
+  ];
+  const MC_QUALITY_MOD = [
+    "Client and server desync, and packet abuse",
+    "Mixin or event conflicts with other mods",
+    "Memory leaks from unregistered listeners or caches"
+  ];
+  const BASE_QUALITY = [
+    "Invalid, empty, oversized, or malformed input",
+    "Rapid repeated actions and double-clicks",
+    "Race conditions and concurrent access",
+    "Network, storage, and permission failures",
+    "Null values and boundary conditions"
+  ];
+
+  const clean = (text) =>
+    (text || "")
+      .split("\n")
+      .map((line) => line.replace(/^\s*(?:[-*•]|\d+[.)])\s*/, "").trim())
+      .filter(Boolean);
+
+  function readState() {
+    const text = {};
+    form.querySelectorAll("input[id], textarea[id], select[id]").forEach((el) => {
+      if (el.type === "checkbox" || el.type === "radio") return;
+      text[el.id] = el.value;
+    });
+    const platformEl = form.querySelector('input[name="platform"]:checked');
+    const traits = [...form.querySelectorAll('input[name="traits"]:checked')].map((c) => c.value);
+    const toggles = {};
+    form.querySelectorAll("input[data-toggle]").forEach((c) => {
+      toggles[c.dataset.toggle] = c.checked;
+    });
+    return { text, platform: platformEl ? platformEl.value : "", traits, toggles };
+  }
+
+  function build(s) {
+    const T = (k) => (s.text[k] || "").trim();
+    const on = (k) => !!s.toggles[k];
+    const platform = s.platform;
+    const isPlugin = platform === "Minecraft plugin";
+    const isMod = platform === "Minecraft mod";
+    const isMC = isPlugin || isMod;
+    const agent = T("agent") || (s.text.agent || "").trim();
+    const name = T("name") || "Untitled App";
+
+    const L = [];
+    const H = (title) => L.push("", `## ${title}`);
+    const P = (text) => L.push(text);
+    const B = (items, fallback) => {
+      if (items.length) items.forEach((x) => L.push(`- ${x}`));
+      else if (fallback) P(fallback);
+    };
+
+    L.push(`# Build Brief: ${name}`, "");
+    P("Build the project described below from start to finish. Make sensible decisions on anything unspecified, keep a short list of the assumptions you made, and only stop to ask if a true blocker makes the work impossible.");
+
+    H("Overview");
+    P(`**Name:** ${name}`);
+    P(`**Platform:** ${platform || "Not chosen. Recommend the best fit and explain why."}`);
+    P(`**Target users:** ${T("users") || "General users. Assume a broad, non-technical audience unless told otherwise."}`);
+    P("");
+    P(T("idea") || "No description given. Propose a clear one and confirm it in your summary.");
+
+    H("Platform & Stack");
+    if (PLATFORM_NOTES[platform]) P(PLATFORM_NOTES[platform]);
+    P(`**Preferred stack:** ${T("stack") || "Not specified. Choose the most suitable modern stack and explain the choice in one or two sentences."}`);
+
+    H("Must-Have Features");
+    B(clean(T("must")), "None listed. Propose a minimal, complete feature set and state it in your summary.");
+
+    const nice = clean(T("nice"));
+    if (nice.length) {
+      H("Nice-to-Have (only after the must-haves work)");
+      B(nice);
+    }
+
+    const outScope = clean(T("nonGoals"));
+    if (outScope.length) {
+      H("Out of Scope");
+      B(outScope);
+    }
+
+    H("Data, Accounts & Backend");
+    P(`**Storage:** ${T("storage") || "Undecided. Pick the simplest option that fits the features."}`);
+    P(`**Needs:** ${s.traits.length ? s.traits.join(", ") : "Nothing beyond the core features."}`);
+
+    H("Design");
+    P(`**Style:** ${T("design") || "Premium, modern, and consistent."}`);
+    if (T("brand")) P(`**Brand notes:** ${T("brand")}`);
+    if (isMC) {
+      P("Design the in-game experience to match: clear chat messages with consistent colors, a documented config.yml, and tidy menus if any are used.");
+    }
+
+    if (on("premium")) {
+      H("Premium Quality Bar");
+      if (isMC) {
+        P("Build this as a premium resource other server owners would pay for: polished in-game messages, a fully configurable config.yml, clear permissions, a helpful command with tab completion, sensible defaults, and a README that covers installation, configuration, permissions, and commands. Include a changelog.");
+      } else {
+        P("Make it feel like a paid, modern product: consistent spacing and typography, smooth but subtle transitions, thoughtful empty, loading, and error states, polished microcopy, and layouts that work well on every screen size.");
+      }
+    }
+
+    if (on("quality")) {
+      H("Bug, Exploit & Crash Sweep");
+      P("Before finishing, check the entire project for bugs, exploits, glitches, dupes, and crashes, and fix every issue you find. Think adversarially, and test at least:");
+      let items = [...BASE_QUALITY];
+      if (isPlugin) items = items.concat(MC_QUALITY_PLUGIN);
+      if (isMod) items = items.concat(MC_QUALITY_MOD);
+      B(items);
+      P("Where a fix is not practical, document the issue as a known limitation.");
+    }
+
+    if (isMC && ((isPlugin && on("dkcore")) || (on("author") && T("author")))) {
+      H("Plugin & Mod Setup");
+      if (isPlugin && on("dkcore")) {
+        const repo = T("repo") || "https://github.com/direkjames/dkCore";
+        P(`Build on dkCore as the shared foundation: ${repo}. Reuse its existing utilities and conventions before writing new code, and keep this plugin consistent with it.`);
+      }
+      if (on("author") && T("author")) {
+        P(`Set the author to **${T("author")}** in ${isPlugin ? "plugin.yml" : "the mod metadata"}, and keep that credit in the README.`);
+      }
+    }
+
+    if (on("tests")) {
+      H("Acceptance Criteria");
+      B([
+        "Every must-have feature works end to end.",
+        "The project builds and runs with no errors or warnings.",
+        ...(on("quality") ? ["Every issue from the sweep is fixed or documented as a known limitation."] : [])
+      ]);
+      H("Test Checklist");
+      P(`End with a numbered test checklist the owner can follow to verify the build. Cover normal use, edge cases, and failure cases, and give the exact steps and expected result for each. ${isMC ? "Include the commands to run on a test server." : "Include how to run it locally."}`);
+    } else {
+      H("Acceptance Criteria");
+      B([
+        "Every must-have feature works end to end.",
+        "The project builds and runs with no errors or warnings."
+      ]);
+    }
+
+    if (on("commit")) {
+      H("Git Workflow");
+      P("Commit and push after each meaningful change. Every commit message must include a short description of what was done, and the same summary goes in your reply.");
+    }
+
+    if (agent && AGENT_NOTES[agent]) {
+      H("Working Style");
+      P(AGENT_NOTES[agent]);
+    }
+
+    H("Deliverables");
+    B([
+      "Complete source code with a README covering setup and usage",
+      "A short summary of decisions, assumptions, and known limitations",
+      ...(on("tests") ? ["The numbered test checklist"] : [])
+    ]);
+
+    return L.join("\n").replace(/\n{3,}/g, "\n\n").trim() + "\n";
+  }
+
+  function save(s) {
+    try { localStorage.setItem(KEY, JSON.stringify(s)); } catch (e) { /* storage unavailable: ignore */ }
+  }
+
+  function restore() {
+    let s = null;
+    try { s = JSON.parse(localStorage.getItem(KEY) || "null"); } catch (e) { s = null; }
+    if (!s || typeof s !== "object") return;
+
+    Object.entries(s.text || {}).forEach(([k, v]) => {
+      const el = $(k);
+      if (el && typeof v === "string") el.value = v;
+    });
+    form.querySelectorAll('input[name="platform"]').forEach((r) => {
+      r.checked = r.value === s.platform;
+    });
+    form.querySelectorAll('input[name="traits"]').forEach((c) => {
+      c.checked = Array.isArray(s.traits) && s.traits.includes(c.value);
+    });
+    form.querySelectorAll("input[data-toggle]").forEach((c) => {
+      const v = s.toggles && s.toggles[c.dataset.toggle];
+      if (typeof v === "boolean") c.checked = v;
+    });
+  }
+
+  function render() {
+    const s = readState();
+    const text = build(s);
+    out.textContent = text;
+    const words = text.split(/\s+/).filter(Boolean).length;
+    const lines = text.split("\n").length;
+    $("count").textContent = `${words} words · ${lines} lines`;
+    save(s);
+  }
+
+  let toastTimer = null;
+  function toast(message, ok = true) {
+    const t = $("toast");
+    t.textContent = message;
+    t.className = `toast show ${ok ? "ok" : "err"}`;
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => { t.className = "toast"; }, 2200);
+  }
+
+  async function copyText(text) {
+    try {
+      if (navigator.clipboard && window.isSecureContext) {
+        await navigator.clipboard.writeText(text);
+        return true;
+      }
+    } catch (e) { /* fall through to legacy copy */ }
+    const ta = document.createElement("textarea");
+    ta.value = text;
+    ta.setAttribute("readonly", "");
+    ta.style.position = "fixed";
+    ta.style.opacity = "0";
+    document.body.appendChild(ta);
+    ta.select();
+    let ok = false;
+    try { ok = document.execCommand("copy"); } catch (e) { ok = false; }
+    ta.remove();
+    return ok;
+  }
+
+  function slugify(text) {
+    return (text || "")
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-+|-+$/g, "") || "app";
+  }
+
+  form.addEventListener("input", render);
+  form.addEventListener("change", render);
+  form.addEventListener("submit", (e) => e.preventDefault());
+
+  $("copy").addEventListener("click", async () => {
+    const ok = await copyText(out.textContent);
+    toast(ok ? "Prompt copied. Paste it into your agent." : "Copy failed. Select the text and copy it manually.", ok);
+  });
+
+  $("dl").addEventListener("click", () => {
+    const s = readState();
+    const blob = new Blob([build(s)], { type: "text/markdown;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${slugify(s.text.name)}-build-prompt.md`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+    toast("Markdown file downloaded.");
+  });
+
+  $("reset").addEventListener("click", () => {
+    if (!window.confirm("Clear everything and start over?")) return;
+    try { localStorage.removeItem(KEY); } catch (e) { /* ignore */ }
+    location.reload();
+  });
+
+  restore();
+  render();
+})();
+</script>
+</body>
+</html>
